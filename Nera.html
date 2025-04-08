@@ -152,15 +152,6 @@
     input[type="text"]::placeholder {
       color: #999;
     }
-    input[type="text"]::-webkit-input-placeholder {
-      color: #999;
-    }
-    input[type="text"]:-ms-input-placeholder {
-      color: #999;
-    }
-    input[type="text"]::-moz-placeholder {
-      color: #999;
-    }
   </style>
 </head>
 <body>
@@ -191,7 +182,7 @@
 </div>
 
 <script>
-  const chatBox = document.getElementById('chat-box');
+    const chatBox = document.getElementById('chat-box');
   const userInput = document.getElementById('user-input');
 
   userInput.addEventListener('keyup', function(event) {
@@ -246,21 +237,13 @@
       botResponse = 'Natural Language Processing (NLP) is a field of artificial intelligence that focuses on the interaction between computers and humans through natural language.';
     } else if (message.includes('what is a chatbot')) {
       botResponse = 'A chatbot is a computer program designed to simulate conversation with human users, especially over the internet.';
+    } else if (message.includes('what is ict?')) {
+      botResponse = 'Information and Communication Technologies (ICTs) is a broader term for Information Technology (IT), which refers to all communication technologies, including the internet, wireless networks, cell phones, computers, software, middleware, video-conferencing, social networking, and other media applications and services.';
     } else {
       botResponse = "I'm sorry, I didn't understand that. Please ask me something else.";
     }
 
-if (message.includes('what is ict?')) {
-      botResponse = 'Information and Communication Technologies (ICTs) is a broader term for Information Technology (IT), which refers to all communication technologies, including the internet, wireless networks, cell phones, computers, software, middleware, video-conferencing, social networking, and other media applications and services.'; }
-
-
-
-
-
-
-
-
-   setTimeout(function() {
+    setTimeout(function() {
       appendMessage('bot', botResponse);
     }, 500);
   }
@@ -274,13 +257,34 @@ if (message.includes('what is ict?')) {
   }
 
   function generateRandomSentence() {
-    const subjects = ['I', 'You', 'He', 'She', 'It', 'We', 'They'];
-    const verbs = ['am', 'is', 'are', 'do', 'does', 'did', 'have', 'has', 'had', 'can', 'could', 'will', 'would', 'shall', 'should', 'may', 'might', 'must'];
-    const objects = ['a chatbot', 'a programmer', 'a teacher', 'a student', 'an engineer', 'a doctor', 'a scientist', 'a writer', 'an artist'];
+    const subjects = ['I', 'You', 'He', 'She', 'It', 'We', 'They',
+      'The robot', 'My dog', 'A stranger', 'The teacher', 'An old man',
+      'The stars', 'The wind', 'The moon', 'A child', 'The dreamer',
+      'My shadow', 'The hero', 'The artist', 'A wanderer', 'The flame',
+      'The guardian', 'A ghost', 'A traveler', 'The voice', 'An angel',
+      'A monster', 'The silence', 'A memory'];
+    const verbs = ['am', 'is', 'are', 'do', 'does', 'did', 'have', 'has', 'had', 'can', 'could', 'will', 'would', 'shall', 'should', 'may', 'might', 'must', 'see', 'hear', 'know', 'believe in', 'create', 'build',
+      'love', 'hate', 'sing to', 'write about', 'run with', 'dream of', 'chase', 'follow', 'imagine', 'fight', 'protect', 'search for',
+      'whisper to', 'remember', 'observe', 'discover', 'embrace', 'escape from',
+      'speak with', 'hide from', 'summon', 'decode', 'translate', 'navigate'];
+    const adjectives = ['amazing', 'mysterious', 'intelligent', 'brave', 'curious',
+      'weird', 'funny', 'tired', 'magical', 'happy', 'silent', 'wise',
+      'fearless', 'gentle', 'fierce', 'golden', 'ancient', 'enchanted',
+      'unknown', 'broken', 'radiant', 'fragile', 'burning', 'melancholic',
+      'serene', 'chaotic', 'luminous', 'restless', 'invisible'];
+    const objects = ['a chatbot', 'a programmer', 'a teacher', 'a student', 'an engineer',
+      'a doctor', 'a scientist', 'a writer', 'an artist', 'a warrior',
+      'a shadow', 'the moon', 'the universe', 'the past', 'the future',
+      'a secret', 'a dream', 'a mystery', 'a melody', 'a memory',
+      'a painting', 'a whisper', 'a legend', 'a flame', 'a mirror',
+      'a prophecy', 'a question', 'a riddle', 'a puzzle', 'a scar'];
+
     const randomSubject = subjects[Math.floor(Math.random() * subjects.length)];
     const randomVerb = verbs[Math.floor(Math.random() * verbs.length)];
+    const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)];
     const randomObject = objects[Math.floor(Math.random() * objects.length)];
-    return `${randomSubject} ${randomVerb} ${randomObject}.`;
+
+    return `${randomSubject} ${randomVerb} ${randomAdjective} ${randomObject}.`;
   }
 
   function myFunction() {
@@ -291,6 +295,7 @@ if (message.includes('what is ict?')) {
       x.className = "topnav";
     }
   }
+  
 </script>
 </body>
 </html>
