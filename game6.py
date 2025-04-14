@@ -2,141 +2,214 @@ import pygame
 import sys
 import random
 
-# Initialize Pygame
 pygame.init()
-pygame.mixer.init() # Initialize the mixer
-
-# Constants (as before)
 WIDTH, HEIGHT = 1490, 650
-CAPTION = "Blob shooter"
-FPS = 60
-PLAYER_SIZE = 50
-PLAYER_SPEED = 5
-ENEMY_SIZE = 40
-ENEMY_SPEED = 2
-BULLET_SPEED = 10
-BUTTON_SIZE = 60
-BUTTON_COLOR = (100, 100, 100)
-BUTTON_TEXT_COLOR = (255, 255, 255)
-HP_COLOR = (255, 0, 0)
-LEVEL_COLOR = (0, 0, 0)
-FLOOR_TILE_SIZE = 10
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Blob Shooter")
 
-# Load Assets (images as before)
+clock = pygame.time.Clock()
 
-# Load Sound Effects
+# Load images
 try:
-    shoot_sound = pygame.mixer.Sound("shoot.m4a")
-    enemy_hit_sound = pygame.mixer.Sound("enemy_hit.m4a")
-    player_hit_sound = pygame.mixer.Sound("player_hit.m4a")
-    level_up_sound = pygame.mixer.Sound("level_up.m4a")
-except pygame.error as e:
-    print(f"Error loading sound: {e}")
+    player_right = pygame.image.load("player_right.png").convert_alpha()
+    player_left = pygame.image.load("player_left.png").convert_alpha()
+    player_down = pygame.image.load("player_down.png").convert_alpha()
+    player_up = pygame.image.load("player_up.png").convert_alpha()  # Add this image if missing
+    floor_tile = pygame.image.load("floor_tile.png").convert()
+    enemy_img = pygame.image.load("enemy_blob2.png").convert_alpha()
+except:
+    print("Make sure all image files are in the same folder")
     pygame.quit()
     sys.exit()
 
-# Set up the display (as before)
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption(CAPTION)
-clock = pygame.time.Clock()
+# Resize player images
+player_right = pygame.transform.scale(player_right, (50, 50))
+player_left = pygame.transform.scale(player_left, (50, 50))
+player_down = pygame.transform.scale(player_down, (50, 50))
+player_up = pygame.transform.scale(player_up, (50, 50))
+enemy_img = pygame.transform.scale(enemy_img, (40, 40))
+
+# Default player image
+player_img = player_right
+player_rect = player_img.get_rect(center=(400, 300))
+player_speed = 5
+player_hp = 100
+last_move_direction = "right"
+
 font = pygame.font.SysFont(None, 30)
 
-# Game Objects (using classes - assuming you've implemented them)
-all_sprites = pygame.sprite.Group()
-enemies = pygame.sprite.Group()
-bullets = pygame.sprite.Group()
-player = Player(400, 300, PLAYER_SPEED)
-all_sprites.add(player)
-
-def spawn_enemies(num_enemies):
-    for _ in range(num_enemies):
-        enemy = Enemy(ENEMY_SPEED)
-        enemies.add(enemy)
-        all_sprites.add(enemy)
-
-spawn_enemies(5)
-
-# UI Elements (as before)
-buttons = {
-    "left": pygame.Rect(50, HEIGHT - 110, BUTTON_SIZE, BUTTON_SIZE),
-    "right": pygame.Rect(170, HEIGHT - 110, BUTTON_SIZE, BUTTON_SIZE),
-    "up": pygame.Rect(110, HEIGHT - 170, BUTTON_SIZE, BUTTON_SIZE),
-    "down": pygame.Rect(110, HEIGHT - 50, BUTTON_SIZE, BUTTON_SIZE),
-    "fire": pygame.Rect(WIDTH - 120, HEIGHT - 100, BUTTON_SIZE, BUTTON_SIZE)
-}
-
+# Enemy data
+enemies = []
+enemy_speed = 1
 kills = 0
 level = 1
 
-# Functions to draw floor, buttons, and status (as before)
+def spawn_enemy():
+    x = random.choice([0, WIDTH])
+    y = random.randint(0, HEIGHT)
+    rect = enemy_img.get_rect(center=(x, y))
+    return rect
 
-# Game Loop
+# Load and play background music
+pygame.mixer.music.load("background_ost.wav")
+pygame.mixer.music.play(-1, 0.0)  # Loop indefinitely
+
+# Bullets
+bullets = []
+bullet_speed = 10
+
+# Touch controls
+button_size = 60
+buttons = {
+    "left": pygame.Rect(50, HEIGHT - 110, button_size, button_size),
+    "right": pygame.Rect(170, HEIGHT - 110, button_size, button_size),
+    "up": pygame.Rect(110, HEIGHT - 170, button_size, button_size),
+    "down": pygame.Rect(110, HEIGHT - 50, button_size, button_size),
+    "fire": pygame.Rect(WIDTH - 120, HEIGHT - 100, button_size, button_size)
+}
+
+def draw_buttons():
+    for name, rect in buttons.items():
+        pygame.draw.rect(screen, (100, 100, 100), rect)
+        label = font.render(name[0].upper(), True, (255, 255, 255))
+        screen.blit(label, (rect.x + 20, rect.y + 15))
+
+def draw_floor():
+    tile_size = 10
+    for x in range(0, WIDTH, tile_size):
+        for y in range(0, HEIGHT, tile_size):
+            screen.blit(floor_tile, (x, y))
+
+def draw_status():
+    hp_text = font.render(f"HP: {player_hp}", True, (255, 0, 0))
+    level_text = font.render(f"Level: {level}", True, (0, 0, 0))
+    screen.blit(hp_text, (10, 10))
+    screen.blit(level_text, (WIDTH - 120, 10))
+
+# Load sound effects
+try:
+    shoot_sound = pygame.mixer.Sound("shoot.wav")
+    enemy_hit_sound = pygame.mixer.Sound("enemy_hit.wav")
+    player_hit_sound = pygame.mixer.Sound("player_hit.wav")
+    level_up_sound = pygame.mixer.Sound("level_up.wav")
+except pygame.error as e:
+    print(f"Error loading sounds: {e}")
+    pygame.quit()
+    sys.exit()
+
+# Spawn first wave
+for _ in range(3):
+    enemies.append(spawn_enemy())
+
+# Game loop
 running = True
 while running:
-    # Event Handling (as before)
+    draw_floor()
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
-    # Touch Input
     touch = pygame.mouse.get_pressed()
     if touch[0]:
         pos = pygame.mouse.get_pos()
         if buttons["left"].collidepoint(pos):
-            player.rect.x -= player.speed
-            player.last_move_direction = "left"
-            player.image = player.image_left
+            player_rect.x -= player_speed
+            last_move_direction = "left"
+            player_img = player_left
         if buttons["right"].collidepoint(pos):
-            player.rect.x += player.speed
-            player.last_move_direction = "right"
-            player.image = player.image_right
+            player_rect.x += player_speed
+            last_move_direction = "right"
+            player_img = player_right
         if buttons["up"].collidepoint(pos):
-            player.rect.y -= player.speed
-            player.last_move_direction = "up"
-            player.image = player.image_up
+            player_rect.y -= player_speed
+            last_move_direction = "up"
+            player_img = player_up
         if buttons["down"].collidepoint(pos):
-            player.rect.y += player.speed
-            player.last_move_direction = "down"
-            player.image = player.image_down
+            player_rect.y += player_speed
+            last_move_direction = "down"
+            player_img = player_down
         if buttons["fire"].collidepoint(pos):
-            player.fire()
-            shoot_sound.play() # Play shoot sound on fire
+            bullet = pygame.Rect(player_rect.centerx, player_rect.centery, 8, 5)
+            if last_move_direction == "right":
+                bullet.x += 20
+                bullets.append((bullet, "right"))
+            elif last_move_direction == "left":
+                bullet.x -= 20
+                bullets.append((bullet, "left"))
+            elif last_move_direction == "up":
+                bullet.y -= 20
+                bullet.width = 5
+                bullet.height = 8
+                bullets.append((bullet, "up"))
+            elif last_move_direction == "down":
+                bullet.y += 20
+                bullet.width = 5
+                bullet.height = 8
+                bullets.append((bullet, "down"))
+            shoot_sound.play()  # Play shooting sound
 
-    # Update Game Objects (as before)
-    player.update()
-    enemies.update(player)
-    bullets.update()
+    for bullet_data in bullets[:]:
+        bullet, direction = bullet_data
+        if direction == "right":
+            bullet.x += bullet_speed
+        elif direction == "left":
+            bullet.x -= bullet_speed
+        elif direction == "up":
+            bullet.y -= bullet_speed
+        elif direction == "down":
+            bullet.y += bullet_speed
 
-    # Collision Detection
-    bullet_hits = pygame.sprite.groupcollide(bullets, enemies, True, True)
-    for _ in bullet_hits:
-        kills += 1
-        enemy_hit_sound.play() # Play enemy hit sound
+        if bullet.left > WIDTH or bullet.right < 0 or bullet.top < 0 or bullet.bottom > HEIGHT:
+            bullets.remove(bullet_data)
 
-    enemy_hits = pygame.sprite.spritecollide(player, enemies, True)
-    player.hp -= len(enemy_hits)
-    if enemy_hits:
-        player_hit_sound.play() # Play player hit sound
-    if player.hp <= 0:
-        running = False
-        print("Game Over!")
+    for enemy in enemies[:]:
+        if enemy.centerx < player_rect.centerx:
+            enemy.x += enemy_speed
+        if enemy.centerx > player_rect.centerx:
+            enemy.x -= enemy_speed
+        if enemy.centery < player_rect.centery:
+            enemy.y += enemy_speed
+        if enemy.centery > player_rect.centery:
+            enemy.y -= enemy_speed
 
-    # Level Progression
-    if kills >= 2 * level:
+        if player_rect.colliderect(enemy):
+            player_hp -= 1
+            enemies.remove(enemy)
+            player_hit_sound.play()  # Play player hit sound
+            if player_hp <= 0:
+                print("Game Over!")
+                running = False
+
+    for bullet_data in bullets[:]:
+        bullet, _ = bullet_data
+        for enemy in enemies[:]:
+            if bullet.colliderect(enemy):
+                bullets.remove(bullet_data)
+                enemies.remove(enemy)
+                enemy_hit_sound.play()  # Play enemy hit sound
+                kills += 1
+                break
+
+    if kills >= 2:
         level += 1
-        kills = 0
-        spawn_enemies(level + 2)
-        level_up_sound.play() # Play level up sound
+        kills = 1
+        for _ in range(level + 2):
+            enemies.append(spawn_enemy())
+        level_up_sound.play()  # Play level up sound
 
-    # Drawing (as before)
-    draw_floor()
-    all_sprites.draw(screen)
+    screen.blit(player_img, player_rect)
+    for enemy in enemies:
+        screen.blit(enemy_img, enemy)
+    for bullet_data in bullets:
+        bullet, _ = bullet_data
+        pygame.draw.rect(screen, (0, 0, 0), bullet)
+
     draw_buttons()
     draw_status()
 
     pygame.display.flip()
-    clock.tick(FPS)
+    clock.tick(30)
 
-# Quit Pygame (as before)
 pygame.quit()
 sys.exit()
