@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Page title</title>
+  <style>
+    :root {
+      --theme-color: #285685;
+      --font-color: black;
+      --shade1: rgba(242, 38, 19, 0.5);
+      --shade2: rgba(0, 255, 255, 0.5);
+    }
+
+    body {
+      background-color: pink;
+      font-family: Arial, sans-serif;
+      color: var(--font-color);
+      display: flex;
+      justify-content: center;
+    }
+
+    .textCont {
+      font-size: 150%;
+      line-height: 1.5;
+      text-align: justify;
+      margin-top: 10%;
+      margin-left: 5px;
+      margin-right: 5px;
+      padding: 20px;
+      width: 60%;
+      max-width: 600px;
+    }
+
+    .textCont::after {
+      content: "|";
+      animation: blinky 1s linear infinite;
+    }
+
+    @keyframes blinky {
+      0%, 49.9% {
+        opacity: 0;
+      }
+      50%, 99.9% {
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="textCont"></div>
+
+  <script>
+    const text = `Tama Pa Ba o Tama Na?
+Tama pa ba, o tama na?
+Dalawang tanong
+na paulit-ulit kong binubulong sa sarili.
+Tama pa ba na magtiis,
+o tama na at hayaan nang matapos
+ang mga bagay-bagay
+na ako lang ang lumalaban?
+Hindi ko maunawaan
+kung bakit ganito
+ang kailangang pagdaanan
+ng pusong ang tanging hangarin ay magmahal
+ng totoo, ng sobra.
+Hindi pa ba sapat?
+Kulang pa ba?
+Ano pa ba ang dapat kong gawin?
+Ano pa ba ang kailangan kong ibigay?
+Para na akong tanga
+na umaasa sa wala.
+Bakit, pagdating sa akin,
+tila lahat ay bawal?
+Lahat ay limitado.
+Lahat ay may kondisyon.
+Ano ba talaga ako?
+Sobra ba ang mga bagay
+na hinihiling kong iparamdam mo?
+Yakap.
+Pag-unawa.
+Pagtanggap.
+Hindi ko maiwasang itanong:
+Ako lang ba ang nagmamahal sa ating dalawa?
+Mahirap.
+Masakit.
+Malungkot.
+Nakakabaliw.
+Iyan ang nararamdaman ko
+sa tuwing ako ay nagmamahal.
+Tama pa ba?
+O tama na?
+Ayan ang aking katanungan.
+Araw-araw.
+Tahimik.
+Paulit-ulit.`;
+
+    const paragraph = text.split("");
+    let i = 0;
+
+    function dashOut(arr) {
+      if (i < arr.length) {
+        document.querySelector(".textCont").textContent += arr[i];
+        i++;
+        setTimeout(() => dashOut(arr), interval(arr[i]));
+      }
+    }
+
+    function interval(letter) {
+      if (letter === ";" || letter === "." || letter === ",") {
+        return Math.floor(Math.random() * 500 + 500);
+      } else {
+        return Math.floor(Math.random() * 130 + 5);
+      }
+    }
+
+    function startFromBegin() {
+      i = 0;
+      document.querySelector(".textCont").textContent = "";
+      dashOut(paragraph);
+    }
+
+    startFromBegin();
+  </script>
+</body>
+</html>
